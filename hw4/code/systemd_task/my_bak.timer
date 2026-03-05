@@ -1,0 +1,10 @@
+[Unit]
+Description=Timer for my_bak.service (script that backs up monitored folders in all user ~/watch dirs)
+
+[Timer]
+OnUnitActiveSec=5min
+Persistent=true
+Unit=my_bak.service
+
+[Install]
+WantedBy=timers.target

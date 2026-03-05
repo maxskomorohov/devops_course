@@ -1,0 +1,12 @@
+[Unit]
+Description=Backup tool that monitors users ~/watch dir and backups the files. Works with timer (currently starts every 5 min)
+After=local-fs.target
+RequiresMountsFor=/home
+
+[Service]
+Type=oneshot
+ExecStart=/root/bak_files.sh
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
