@@ -1,0 +1,23 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-24.04"
+
+  config.vm.provider "virtualbox" do |vm|
+    vm.name = "hw_8"
+    vm.memory = 2048
+    vm.cpus = 4
+  end
+
+  # To check local network run: ip a
+  config.vm.network "public_network"
+
+  # Install nginx and change default 80 port to 82
+  config.vm.provision "shell", inline: <<-SHELL
+    apt-get update
+    apt-get install -y nginx
+    systemctl enable nginx
+    systemctl start nginx
+    sed -i "s/listen 80 default_server/listen 82 default_server/" /etc/nginx/sites-available/default
+    sed -i "s/listen \\[::\\]:80 default_server;/listen [::]:82 default_server;/" /etc/nginx/sites-available/default
+    nginx -t && systemctl reload nginx
+  SHELL
+end
