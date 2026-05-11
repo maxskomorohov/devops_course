@@ -1,0 +1,5 @@
+To run the app:
+
+1. pip install -r requirements.txt
+2. python test_requests.py
+3. Check console for server status codes and responses
