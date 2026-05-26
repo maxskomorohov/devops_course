@@ -1,4 +1,4 @@
-from storage import read_students_rows, write_students_rows, append_student_row
+from src.storage import read_students_rows, write_students_rows, append_student_row
 
 def row_to_student(row):
     return {

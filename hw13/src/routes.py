@@ -1,7 +1,7 @@
 from flask import request
-from responses import success_response, error_response
-from validators import validate_student_data
-from service import (
+from src.responses import success_response, error_response
+from src.validators import validate_student_data
+from src.service import (
     get_students,
     find_student_by_id,
     find_students_by_lastname,
