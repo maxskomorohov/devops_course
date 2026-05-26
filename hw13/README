@@ -1,0 +1,5 @@
+To run the app:
+    1. cd hw13
+    2. docker compose up -d
+
+The app should be available at - http://localhost/students (GET, POST)
