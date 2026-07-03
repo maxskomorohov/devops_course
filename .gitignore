@@ -45,7 +45,7 @@ docker-compose.override.yml
 **/.env
 
 # =====================
-# Vagrant
+# Vagrantfile
 # =====================
 .vagrant/
 
@@ -110,3 +110,5 @@ coverage/
 .coverage
 htmlcov/
 reports/
+
+hw12/
