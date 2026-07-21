@@ -5,14 +5,14 @@ echo "Started user script"
 echo "= = = = = = = = = ="
 
 # Add Docker's official GPG key:
-sudo apt-get update -y
-sudo apt-get install ca-certificates curl
-sudo install -m 0755 -d /etc/apt/keyrings
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-sudo chmod a+r /etc/apt/keyrings/docker.asc
+apt-get update -y
+apt-get install -y ca-certificates curl
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+chmod a+r /etc/apt/keyrings/docker.asc
 
 # Add the repository to Apt sources:
-sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+tee /etc/apt/sources.list.d/docker.sources <<EOF
 Types: deb
 URIs: https://download.docker.com/linux/ubuntu
 Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
@@ -22,21 +22,20 @@ Signed-By: /etc/apt/keyrings/docker.asc
 EOF
 
 # Install docker packages
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
-sudo systemctl enable --now docker
+apt-get update -y
+apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+systemctl enable --now docker
 
+# Get Dockerfile from git
+mkdir -p /opt/nginx
+curl -fL \
+  https://raw.githubusercontent.com/maxskomorohov/devops_course/main/hw20/docker/Dockerfile \
+  -o /opt/nginx/Dockerfile
 
-
-
-
-
-
-#apt-get install -y nginx
-
-#TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-#curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4 > /var/www/html/index.nginx-debian.html
-#
-#systemctl restart nginx
+# Build new image, stop and remove previous container, start new container
+docker build -f /opt/nginx/Dockerfile -t hw20-nginx:latest /opt/nginx
+docker rm -f custom-nginx 2>/dev/null || true
+docker run --name custom-nginx --restart unless-stopped -p 80:80 -d hw20-nginx:latest
 
 echo "= = = = = = = = = ="
 echo "Finished user script"
