@@ -4,6 +4,9 @@ echo "= = = = = = = = = ="
 echo "Started user script"
 echo "= = = = = = = = = ="
 
+# Variables
+REPO_URL='${repo_url}'
+
 # Add Docker's official GPG key:
 apt-get update -y
 apt-get install -y ca-certificates curl
@@ -15,7 +18,7 @@ chmod a+r /etc/apt/keyrings/docker.asc
 tee /etc/apt/sources.list.d/docker.sources <<EOF
 Types: deb
 URIs: https://download.docker.com/linux/ubuntu
-Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Suites: $(. /etc/os-release && echo "$${UBUNTU_CODENAME:-$VERSION_CODENAME}")
 Components: stable
 Architectures: $(dpkg --print-architecture)
 Signed-By: /etc/apt/keyrings/docker.asc
@@ -28,9 +31,7 @@ systemctl enable --now docker
 
 # Get Dockerfile from git
 mkdir -p /opt/nginx
-curl -fL \
-  https://raw.githubusercontent.com/maxskomorohov/devops_course/main/hw20/docker/Dockerfile \
-  -o /opt/nginx/Dockerfile
+curl -fL "$${REPO_URL}" -o /opt/nginx/Dockerfile
 
 # Build new image, stop and remove previous container, start new container
 docker build -f /opt/nginx/Dockerfile -t hw20-nginx:latest /opt/nginx

@@ -12,7 +12,9 @@ resource "aws_instance" "hw20_ec2" {
     http_tokens   = "required" # IMDSv2
   }
 
-  user_data = file("${path.module}/user-data.sh")
+  user_data = templatefile("${path.module}/user-data.sh", {
+    repo_url = var.repo_url
+  })
 
   tags = {
     Name = "hw20-ec2"
