@@ -1,0 +1,92 @@
+---
+- name: Run Nginx with Docker Compose
+  hosts: all
+
+  vars:
+    target_user: ubuntu
+
+  tasks:
+    - name: Install Docker and all required dependencies
+      become: true
+      block:
+        - name: Install Docker prerequisites
+          ansible.builtin.apt:
+            name: "{{ item }}"
+            state: present
+            update_cache: true
+          loop:
+            - ca-certificates
+            - curl
+
+        - name: Create directory for Docker APT keyring
+          ansible.builtin.file:
+            path: /etc/apt/keyrings
+            state: directory
+            mode: "0755"
+
+        - name: Add Docker official GPG key
+          ansible.builtin.get_url:
+            url: https://download.docker.com/linux/ubuntu/gpg
+            dest: /etc/apt/keyrings/docker.asc
+            mode: "0644"
+
+        - name: Add Docker stable repository
+          ansible.builtin.apt_repository:
+            repo: >-
+              deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc]
+              https://download.docker.com/linux/ubuntu
+              {{ ansible_distribution_release }} stable
+            state: present
+            filename: docker
+            update_cache: true
+
+        - name: Install Docker Engine and Docker Compose plugin
+          ansible.builtin.apt:
+            name: "{{ item }}"
+            state: present
+          loop:
+              - docker-ce
+              - docker-ce-cli
+              - containerd.io
+              - docker-buildx-plugin
+              - docker-compose-plugin
+
+        - name: Ensure Docker service is running and enabled
+          ansible.builtin.systemd_service:
+            name: docker
+            state: started
+            enabled: true
+
+        - name: Add target user to Docker group
+          ansible.builtin.user:
+            name: "{{ target_user }}"
+            groups: docker
+            append: true
+
+    - name: Copy project files to server
+      become: true
+      become_user: ubuntu
+      block:
+          - name: Create dir for project files
+            file:
+              path: /home/ubuntu/hw21
+              state: directory
+
+          - name: Copy docker-compose.yaml and HTML files to project dir
+            copy:
+              src: /Users/maksym/Desktop/learning/devops/02_homework/hw21/ansible/files/
+              dest: /home/ubuntu/hw21
+              owner: "{{ target_user }}"
+              group: "{{ target_user }}"
+              mode: "0755"
+
+
+    - name: Run nginx with Docker Compose
+      become: true
+      become_user: ubuntu
+      block:
+          - name: Docker compose up
+            community.docker.docker_compose_v2:
+              project_src: /home/ubuntu/hw21
+              state: present
+              pull: missing

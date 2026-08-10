@@ -1,0 +1,14 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: hw21-nginx
+    networks:
+      web-servers:
+    ports:
+      - "80:80"
+    volumes:
+      - /home/ubuntu/hw21/html/index.html:/usr/share/nginx/html/index.html
+
+
+networks:
+  web-servers:
