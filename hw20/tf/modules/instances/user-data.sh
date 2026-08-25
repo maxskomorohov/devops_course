@@ -30,13 +30,13 @@ apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docke
 systemctl enable --now docker
 
 # Get Dockerfile from git
-mkdir -p /opt/nginx
-curl -fL "$${REPO_URL}" -o /opt/nginx/Dockerfile
+mkdir -p /opt/nginx_configs
+curl -fL "$${REPO_URL}" -o /opt/nginx_configs/Dockerfile
 
 # Build new image, stop and remove previous container, start new container
-docker build -f /opt/nginx/Dockerfile -t hw20-nginx:latest /opt/nginx
-docker rm -f custom-nginx 2>/dev/null || true
-docker run --name custom-nginx --restart unless-stopped -p 80:80 -d hw20-nginx:latest
+docker build -f /opt/nginx_configs/Dockerfile -t hw20-nginx_configs:latest /opt/nginx_configs
+docker rm -f custom-nginx_configs 2>/dev/null || true
+docker run --name custom-nginx_configs --restart unless-stopped -p 80:80 -d hw20-nginx_configs:latest
 
 echo "= = = = = = = = = ="
 echo "Finished user script"

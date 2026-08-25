@@ -81,7 +81,7 @@
               mode: "0755"
 
 
-    - name: Run nginx with Docker Compose
+    - name: Run nginx_configs with Docker Compose
       become: true
       become_user: ubuntu
       block:
