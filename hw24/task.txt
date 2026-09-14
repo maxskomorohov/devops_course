@@ -1,0 +1,28 @@
+1. Build docker image with script
+
+    docker build -t maks1020/hw24:v1 -t maks1020/hw24:latest .
+
+2. Add image to private DockerHub repo
+
+    docker push maks1020/hw24:v1
+    docker push maks1020/hw24:latest
+
+3. Create private namespace
+
+4. Create secret in cluster
+
+    kubectl create secret docker-registry dockerhub-secret \
+  --docker-server=https://index.docker.io/v1/ \
+  --docker-username=maks1020 \
+  --docker-password="PLACE_TOKEN_HERE" \
+  -n hw24
+
+5. Add deployment + service + ingress
+
+6. Connect to service and get response
+
+    minikube tunnel
+
+7. Check that response is received from 2 different pods
+
+
