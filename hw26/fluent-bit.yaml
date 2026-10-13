@@ -1,0 +1,20 @@
+service: # Configs of FluentBit itself
+  flush: 5 # Sending interval in seconds
+  log_level: info # FluentBit own log level
+
+pipeline:
+  inputs: # From where to accept logs
+    - name: forward # Using protocol - Fluent Forward
+      listen: 0.0.0.0 # From anyone who sends
+      Port: 24224 # on this port take logs
+
+  outputs: # Where to send logs (can be several outputs at the same time)
+#    - name: stdout  # Send to console
+#      match: '*' # with all tags
+
+    - name: es # Send to ElasticSearch
+      match: '*'
+      host: elasticsearch # Same as in docker-compose file (elasticsearch)
+      port: 9200
+      index: nodejs-app # Folder in ElasticSearch where all logs from this app will be put
+      suppress_type_name: On
