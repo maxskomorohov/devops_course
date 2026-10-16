@@ -1,0 +1,23 @@
+---
+- name: Create project folder
+  ansible.builtin.file:
+    path: /home/ubuntu/config_files/
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: "0755"
+
+- name: Copy project files
+  ansible.builtin.copy:
+    src: files/
+    dest: /home/ubuntu/config_files/
+    owner: ubuntu
+    group: ubuntu
+    mode: "0644"
+    directory_mode: "0755"
+  notify: Restart monitoring
+
+- name: Start monitoring containers
+  community.docker.docker_compose_v2:
+    project_src: /home/ubuntu/config_files
+    state: present

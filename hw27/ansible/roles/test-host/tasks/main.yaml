@@ -1,0 +1,68 @@
+---
+- name: Create project folder and copy required files
+  block:
+  - name: Create folder project files
+    ansible.builtin.file:
+      path: /home/ubuntu/config_files
+      state: directory
+      owner: ubuntu
+      group: ubuntu
+      mode: "0750"
+
+  - name: Copy docker compose file to host
+    ansible.builtin.copy:
+      src: files/docker-compose.yaml
+      dest: /home/ubuntu/config_files/
+      owner: ubuntu
+      group: ubuntu
+      mode: "0640"
+    register: docker_compose_files
+
+
+- name: Start petclinic and cAdvisor containers with docker compose
+  community.docker.docker_compose_v2:
+    project_src: /home/ubuntu/config_files
+    state: present
+
+
+- name: Install and start Node Exporter
+  block:
+    - name: Download the tarball (wget)
+      ansible.builtin.get_url:
+        url: "https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-arm64.tar.gz"
+        dest: "/tmp/node_exporter-1.10.2.linux-arm64.tar.gz"
+
+    - name: Extract the file (tar xvfz)
+      ansible.builtin.unarchive:
+        src: "/tmp/node_exporter-1.10.2.linux-arm64.tar.gz"
+        dest: "/tmp/"
+        remote_src: yes
+
+    - name: Copy binary to a standard location
+      ansible.builtin.copy:
+        src: "/tmp/node_exporter-1.10.2.linux-arm64/node_exporter"
+        dest: "/usr/local/bin/node_exporter"
+        mode: '0755'
+        remote_src: yes
+
+    - name: Create Systemd service file
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/node_exporter.service
+        content: |
+          [Unit]
+          Description=Node Exporter
+          After=network.target
+
+          [Service]
+          User=root
+          ExecStart=/usr/local/bin/node_exporter
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Start and enable Node Exporter service
+      ansible.builtin.systemd:
+        name: node_exporter
+        state: started
+        enabled: yes
+        daemon_reload: yes

@@ -1,0 +1,17 @@
+- name: Install common prerequisites
+  hosts: all
+  become: true
+  roles:
+    - common
+
+- name: Install test VM prerequisites (docker and exporters)
+  hosts: test-host
+  become: true
+  roles:
+    - test-host
+
+- name: Install monitor VM prerequisites (Prometheus, Grafana, AlertManager)
+  hosts: monitor-host
+  become: true
+  roles:
+    - monitor-host

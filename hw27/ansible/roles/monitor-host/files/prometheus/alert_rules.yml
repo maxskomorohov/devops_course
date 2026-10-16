@@ -1,0 +1,69 @@
+groups:
+  # General Alerts (connection, uptime, system and other should be here)
+  - name: infrastructure_alerts
+    rules:
+      - alert: InstanceDown
+        expr: up == 0             # 0 - down, 1 - up
+        for: 30s                  # Condition should last for X seconds for the alert to fire
+        labels:
+          severity: critical      # Just a tag, can be any description
+        annotations:
+          summary: "{{ $labels.job }} is down"
+          description: "{{ $labels.job }} at {{ $labels.instance }} is down > 30 sec."
+
+
+  # Host Alerts (alerts connected with host VM)
+  - name: host_alerts
+    rules:
+      - alert: HighCpuUsage
+        #  % of time within 5 min interval CPU was not idle   /   out of all CPU time within 5 min   >   and this ratio is higher than 80%
+        expr: 100 * (1 - sum by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) / sum by (instance) (rate(node_cpu_seconds_total[5m]))) > 80
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High CPU usage detected on host VM: {{ $labels.instance }}"
+          description: "CPU usage on instance {{ $labels.instance }} has been above 80% for the last 5 minutes. Current value: {{ $value | printf \"%.2f\" }}%"
+
+  - name: resource_alerts
+    rules:
+      - alert: HostHighMemoryUsage
+        expr: 100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Memory usage on host VM: {{ $labels.instance }}"
+          description: "RAM usage on instance {{ $labels.instance }} has been above 80% for 5 minutes. Current usage: {{ $value | printf \"%.2f\" }}%"
+
+  - name: disk_alerts
+    rules:
+      - alert: HostDiskSpaceFillingUp
+        expr: 100 * (1 - node_filesystem_avail_bytes{job="petclinic-node-exporter", mountpoint="/"}/node_filesystem_size_bytes{job="petclinic-node-exporter", mountpoint="/"}) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage on host VM: {{ $labels.instance }}"
+          description: "The disk on instance {{ $labels.instance }} is {{ $value | printf \"%.2f\" }}% full for the last 5 minutes."
+
+  # Container alerts for Petclinic running on the host VM
+  - name: petclinic_container_alerts
+    rules:
+      - alert: PetclinicHighCpu
+        expr: sum(rate(container_cpu_usage_seconds_total{name="petclinic"}[10m])) * 100 > 80
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on Petclinic"
+          description: "Petclinic CPU usage, averaged over 5 minutes, has remained above 80% of one CPU core for 5 minutes. Current value: {{ $value | printf \"%.2f\" }}%."
+
+      - alert: PetclinicHighRam
+        expr: 100 * (container_memory_usage_bytes{job="petclinic-cadvisor", name="petclinic"}/container_spec_memory_limit_bytes{job="petclinic-cadvisor", name="petclinic"}) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on Petclinic"
+          description: "Petclinic memory usage, including cache, has remained above 80 % for 5 minutes. Current value: {{ $value | printf \"%.2f\" }} MiB."
